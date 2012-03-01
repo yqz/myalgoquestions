@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import tree
 
 """
 QUESTION:
@@ -60,7 +61,96 @@ class IntervalLL(object):
         while node is not None:
             yield node.interval
             node = node.next
-                
+
+class IntervalTree(object):
+    """Interval tree. All intervals inside the tree shall
+    not overlap each other"""
+    class _Node(object):
+        def __init__(self, interval):
+            self.interval = interval
+            self.left = None
+            self.right = None
+        def left_cut(self, masternode, x):
+            if x < self.interval[0]:
+                if self.left is not None:
+                    self.left = self.left.left_cut(masternode, x)
+                return self
+            if x >= self.interval[0] and x <= self.interval[1]:
+                masternode.interval = interval_union(masternode.interval, self.interval)
+                return self.right
+            if x > self.interval[1]:
+                if self.right is not None:
+                    return self.right.left_cut(masternode, x) 
+                else:
+                    return None
+        def right_cut(self, masternode, x):
+            if x > self.interval[1]:
+                if self.right is not None:
+                    self.right = self.right.right_cut(masternode, x)
+                return self
+            if x <= self.interval[1] and x >= self.interval[0]:
+                masternode.interval = interval_union(masternode.interval, self.interval)
+                return self.left
+            if x < self.interval[0]:
+                if self.left is not None:
+                    return self.left.right_cut(masternode, x) 
+                else:
+                    return None
+                    
+
+
+
+    def __init__(self):
+        self.root = None
+
+    def add(self, interval):
+        """Adding a interval to the tree."""
+        if self.root is None:
+            self.root = self._Node(interval)
+        else:
+            # Find the first that overlaps.
+            node = self.root
+            while True:
+                if interval[1] < node.interval[0]:
+                    if node.left is not None:
+                        node = node.left
+                    else:
+                        # Add a new leaf node since there's no
+                        # overlap
+                        node.left = self._Node(interval)
+                        break
+                elif interval[0] > node.interval[1]:
+                    if node.right is not None:
+                        node = node.right
+                    else:
+                        # Add a new leaf node since there's no
+                        # overlap
+                        node.right = self._Node(interval)
+                        break
+                else:
+                    # Overlap found, we need to extend the current 
+                    # node to the union of the node the do a left/right
+                    # cut.
+                    oe = node.interval[1]
+                    os = node.interval[0]
+                    node.interval = interval_union(node.interval, interval)
+                    if interval[1] > oe and node.right is not None:
+                        node.right = node.right.left_cut(node, interval[1])
+                    if interval[0] < os and node.left is not None:
+                        node.left = node.left.right_cut(node, interval[0])
+                    break
+    def intervals(self):
+        r = []
+        def addtor(node):
+            r.append(node.interval)
+        tree.inorder_traversal_iterative_2(self.root, addtor)
+        return r
+
+
+
+
+
+
 import unittest
 
 class MyUnitTest(unittest.TestCase):
@@ -87,6 +177,25 @@ class MyUnitTest(unittest.TestCase):
         il.add((-100, 100))
         self.assertEqual(list(il.intervals()), [(-100, 100)])
 
+    def test_func2(self):
+        il = IntervalTree()
+        il.add((1,3))
+        il.add((2,6))
+        il.add((8,10))
+        il.add((15,18))
+        self.assertEqual(list(il.intervals()), [(1, 6), (8, 10), (15, 18)])
+        il.add((9,14))
+        self.assertEqual(list(il.intervals()), [(1, 6), (8, 14), (15, 18)])
+        il.add((13,17))
+        self.assertEqual(list(il.intervals()), [(1, 6), (8, 18)])
+        il.add((-1, 1))
+        self.assertEqual(list(il.intervals()), [(-1, 6), (8, 18)])
+        il.add((-4, -3))
+        self.assertEqual(list(il.intervals()), [(-4,-3),(-1, 6), (8, 18)])
+        il.add((20, 23))
+        self.assertEqual(list(il.intervals()), [(-4,-3),(-1, 6), (8, 18), (20, 23)])
+        il.add((-100, 100))
+        self.assertEqual(list(il.intervals()), [(-100, 100)])
 if __name__ == '__main__':
     unittest.main()
 
