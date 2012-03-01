@@ -24,10 +24,8 @@ def solve(L, h, C):
         print [c > C and C or c for c in cups]
         cups_next = [0]*(i+1)
         for j in range(len(cups_next)):
-            if j < len(cups) and cups[j] > C:
-                cups_next[j] += (cups[j] - C)/2
-            if j -1 >= 0 and cups[j-1] > C:
-                cups_next[j] += (cups[j-1] - C)/2 
+            cups_next[j] += (cups[j] - C)/2 if j < len(cups) and cups[j] > C else 0
+            cups_next[j] += (cups[j-1] - C)/2 if j -1 >= 0 and cups[j-1] > C else 0
         cups = cups_next
     # print the last level
     print [c > C and C or c for c in cups]
