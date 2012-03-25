@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+
 def f():
     x = 10
     def g():
