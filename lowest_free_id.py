@@ -21,16 +21,15 @@ def partition(a, l, h, x):
     return j
 
 
-def _lowest_free_id(a, s, n):
-    if n == 0:
-        print s
+def _lowest_free_id(a, s, h):
+    if s==h:
         return s
-    mid = s + n/2
-    p = partition(a, s, s + n, mid)
+    mid = (s + h)/2
+    p = partition(a, s, h, mid)
     if p - s  < mid - s + 1:
-        return _lowest_free_id(a, s, p - s)
+        return _lowest_free_id(a, s, p)
     elif p - s  == mid - s + 1:
-        return _lowest_free_id(a, p, s+n-p)
+        return _lowest_free_id(a, p, h)
     else:
         assert False
 
